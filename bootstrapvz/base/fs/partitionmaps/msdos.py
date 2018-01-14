@@ -29,7 +29,7 @@ class MSDOSPartitionMap(AbstractPartitionMap):
         if 'boot' in data:
             self.boot = MSDOSPartition(Sectors(data['boot']['size'], sector_size),
                                        data['boot']['filesystem'], data['boot'].get('format_command', None),
-                                       data['boot'].get('mountopts', None), 'boot', last_partition())
+                                       data['boot'].get('mountopts', None), None, 'boot', last_partition())
             self.partitions.append(self.boot)
 
         # Offset all partitions by 1 sector.
@@ -47,7 +47,7 @@ class MSDOSPartitionMap(AbstractPartitionMap):
 
         self.root = MSDOSPartition(Sectors(data['root']['size'], sector_size),
                                    data['root']['filesystem'], data['root'].get('format_command', None),
-                                   data['root'].get('mountopts', None), 'root', last_partition())
+                                   data['root'].get('mountopts', None), None, 'root', last_partition())
         if self.root.previous is not None:
             self.root.pad_start += partition_gap
             self.root.size -= partition_gap

@@ -20,11 +20,12 @@ class BasePartition(AbstractPartition):
               {'name': 'unmap', 'src': 'mapped', 'dst': 'unmapped'},
               ]
 
-    def __init__(self, size, filesystem, format_command, mountopts, previous):
+    def __init__(self, size, filesystem, format_command, mountopts, mode, previous):
         """
         :param Bytes size: Size of the partition
         :param str filesystem: Filesystem the partition should be formatted with
         :param list format_command: Optional format command, valid variables are fs, device_path and size
+        :param str mode: Permissions of the partition mountpoint
         :param BasePartition previous: The partition that preceeds this one
         """
         # By saving the previous partition we have a linked list
@@ -34,7 +35,7 @@ class BasePartition(AbstractPartition):
         self.flags = []
         # Path to symlink in /dev/disk/by-uuid (manually maintained by this class)
         self.disk_by_uuid_path = None
-        super(BasePartition, self).__init__(size, filesystem, format_command, mountopts)
+        super(BasePartition, self).__init__(size, filesystem, format_command, mountopts, mode)
 
     def create(self, volume):
         """Creates the partition

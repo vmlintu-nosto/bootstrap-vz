@@ -3,6 +3,7 @@ from abc import abstractmethod
 from bootstrapvz.common.sectors import Sectors
 from bootstrapvz.common.tools import log_check_call
 from bootstrapvz.common.fsm_proxy import FSMProxy
+import os
 
 
 class AbstractPartition(FSMProxy):
@@ -19,17 +20,20 @@ class AbstractPartition(FSMProxy):
               {'name': 'unmount', 'src': 'mounted', 'dst': 'formatted'},
               ]
 
-    def __init__(self, size, filesystem, format_command, mountopts):
+    def __init__(self, size, filesystem, format_command, mountopts, mode):
         """
         :param Bytes size: Size of the partition
         :param str filesystem: Filesystem the partition should be formatted with
         :param list format_command: Optional format command, valid variables are fs, device_path and size
+        :param str mode: Permissions of the partition mountpoint (if not set, system defaults are used)
         """
         self.size           = size
         self.filesystem     = filesystem
         self.format_command = format_command
         # List of mount options
         self.mountopts      = mountopts
+        # Permissions of the mountpoint
+        self.mode           = mode
         # Initialize the start & end padding to 0 sectors, may be changed later
         self.pad_start = Sectors(0, size.sector_size)
         self.pad_end = Sectors(0, size.sector_size)
@@ -89,6 +93,9 @@ class AbstractPartition(FSMProxy):
         # Mount the partition
         log_check_call(mount_command)
         self.mount_dir = e.destination
+
+        if self.mode != None and self.mode > 0:
+            os.chmod(e.destination, self.mode)
 
     def _after_mount(self, e):
         """Mount any mounts associated with this partition
