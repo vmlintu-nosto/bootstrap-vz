@@ -19,7 +19,7 @@ class S3FStab(Task):
                                    mountpoint='/',
                                    filesystem=root.filesystem,
                                    mount_opts=','.join(mount_opts),
-                                   dump='1',
+                                   dump='0',
                                    pass_num='1'))
 
         fstab_path = os.path.join(info.root, 'etc/fstab')

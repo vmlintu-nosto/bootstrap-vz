@@ -204,19 +204,19 @@ class FStab(Task):
         partitions = p_map.partitions
         mount_points = [{'path': '/',
                          'partition': p_map.root,
-                         'dump': '1',
+                         'dump': '0',
                          'pass_num': '1',
                          }]
         if hasattr(p_map, 'boot'):
             mount_points.append({'path': '/boot',
                                  'partition': p_map.boot,
-                                 'dump': '1',
+                                 'dump': '0',
                                  'pass_num': '2',
                                  })
         if hasattr(p_map, 'swap'):
             mount_points.append({'path': 'none',
                                  'partition': p_map.swap,
-                                 'dump': '1',
+                                 'dump': '0',
                                  'pass_num': '0',
                                  })
 
@@ -225,7 +225,7 @@ class FStab(Task):
                 key=lambda partition: len(partition.name)):
             mount_points.append({'path': "/" + partition.name,
                                  'partition': getattr(p_map, partition.name),
-                                 'dump': '1',
+                                 'dump': '0',
                                  'pass_num': '2',
                                  })
         fstab_lines = []
