@@ -1,0 +1,30 @@
+---
+$schema: http://json-schema.org/draft-04/schema#
+title: Add custom repository
+type: object
+properties:
+  plugins:
+    type: object
+    properties:
+      apt_repo:
+        type: object
+        $ref: '#/definitions/apt_repos'
+
+definitions:
+  apt_repo:
+    type: object
+    properties:
+      url: {type: string}
+      release: {type: string}
+      components:
+        type: array
+        items:
+          type: string
+        minItems: 1
+        uniqueItems: true
+      key_url: {type: string}
+    additionalProperties: false
+
+  apt_repos:
+    patternProperties:
+      ^.*: {$ref: '#/definitions/apt_repo'}
