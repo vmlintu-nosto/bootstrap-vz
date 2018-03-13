@@ -41,12 +41,24 @@ class EBSVolume(Volume):
         import string
 
         self.instance_id = e.instance_id
-        for letter in string.ascii_lowercase[5:]:
-            dev_path = os.path.join('/dev', 'xvd' + letter)
-            if not os.path.exists(dev_path):
-                self.device_path = dev_path
-                self.ec2_device_path = os.path.join('/dev', 'sd' + letter)
-                break
+        if os.path.exists('/dev/xvda'):
+            for letter in string.ascii_lowercase[5:]:
+                dev_path = os.path.join('/dev', 'xvd' + letter)
+
+                if not os.path.exists(dev_path):
+                    self.device_path = dev_path
+                    self.ec2_device_path = os.path.join('/dev', 'sd' + letter)
+                    break
+
+        if os.path.exists('/dev/nvme0'):
+            for index in range(1,20):
+                dev_path = os.path.join('/dev', "nvme%dn1" % index)
+
+                if not os.path.exists(dev_path):
+                    letter = string.ascii_lowercase[4:][index]
+                    self.device_path = dev_path
+                    self.ec2_device_path = os.path.join('/dev', 'sd' + letter)
+                    break
 
         if self.device_path is None:
             raise VolumeError('Unable to find a free block device path for mounting the bootstrap volume')
