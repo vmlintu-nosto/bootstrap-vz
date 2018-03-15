@@ -16,7 +16,12 @@ class Create(Task):
             formatted_tags = {k: v.format(**info.manifest_vars) for k, v in raw_tags.items()}
             tags = [{'Key': k, 'Value': v} for k, v in formatted_tags.items()]
 
-        info.volume.create(info._ec2['connection'], info._ec2['host']['availabilityZone'], tags)
+        # EBS volumes support encryption. KMS key id is optional and default key
+        # is used when it is not defined.
+        encrypted = info.manifest.data['provider']['encrypted'] if 'encrypted' in info.manifest.data['provider'] else False
+        kms_key_id = info.manifest.data['provider']['kms_key_id'] if 'kms_key_id' in info.manifest.data['provider'] else None
+
+        info.volume.create(info._ec2['connection'], info._ec2['host']['availabilityZone'], tags, encrypted, kms_key_id)
 
 
 class Attach(Task):
