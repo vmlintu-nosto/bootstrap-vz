@@ -7,6 +7,16 @@ from bootstrapvz.providers.ec2.tasks import ami
 from bootstrapvz.common.tools import log_check_call
 
 
+class AddPackages(Task):
+    description = 'Adding python-pip'
+    phase = phases.preparation
+    successors = [packages.AddManifestPackages]
+
+    @classmethod
+    def run(cls, info):
+        info.packages.add('python-pip')
+
+
 class QueryPackages(Task):
     description = 'Query packages installed in the AMI'
     phase = phases.system_cleaning
@@ -17,6 +27,30 @@ class QueryPackages(Task):
         command = [ "chroot %s dpkg-query -W" % (info.root) ]
         packages = log_check_call(command, shell=True)
         info._ec2_metadata['packages'] = packages
+
+
+class QueryGems(Task):
+    description = 'Query gems installed in the AMI'
+    phase = phases.system_cleaning
+
+    @classmethod
+    def run(cls, info):
+        from bootstrapvz.common.tools import log_check_call
+        command = [ "chroot %s gem list" % (info.root) ]
+        gems = log_check_call(command, shell=True)
+        info._ec2_metadata['gems'] = packages
+
+
+class QueryPips(Task):
+    description = 'Query pips installed in the AMI'
+    phase = phases.system_cleaning
+
+    @classmethod
+    def run(cls, info):
+        from bootstrapvz.common.tools import log_check_call
+        command = [ "chroot %s pip list" % (info.root) ]
+        pips = log_check_call(command, shell=True)
+        info._ec2_metadata['pips'] = packages
 
 
 class WriteAMIMetadata(Task):
@@ -31,6 +65,8 @@ class WriteAMIMetadata(Task):
         data = {}
         data['ami_id'] = ami_id
         data['packages'] = {}
+        data['gems'] = {}
+        data['pips'] = {}
         data['tags'] = {}
 
         # Package list returned by dpkg-query -W has package name and version
@@ -38,6 +74,28 @@ class WriteAMIMetadata(Task):
         for line in info._ec2_metadata['packages']:
             l = line.split("\t")
             data['packages'][l[0]] = l[1]
+
+        # Gem list returned by gem list has format "package (version, version)"
+        for line in info._ec2_metadata['gems']:
+            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
+            name = m[0][0]
+            versions = []
+
+            for version in m[0][1].split(","):
+                versions.extend(version.strip())
+
+            data['gems'][name] = versions
+
+        # Gem list returned by pip list has format "package (version, version)"
+        for line in info._ec2_metadata['pips']:
+            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
+            name = m[0][0]
+            versions = []
+
+            for version in m[0][1].split(","):
+                versions.extend(version.strip())
+
+            data['pips'][name] = versions
 
         # Setting up tags on the AMI
         if 'tags' in info.manifest.data:
