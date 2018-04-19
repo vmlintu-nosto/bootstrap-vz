@@ -123,7 +123,9 @@ class RegisterAMI(Task):
                                                           [info._ec2['region'],
                                                            info.manifest.system['architecture']])
 
-        if info.manifest.provider.get('enhanced_networking', None) == 'simple':
+        enhanced_networking = info.manifest.provider.get('enhanced_networking', None)
+
+        if enhanced_networking == 'simple' or enhanced_networking == 'kernel':
             registration_params['SriovNetSupport'] = 'simple'
             registration_params['EnaSupport'] = True
 
