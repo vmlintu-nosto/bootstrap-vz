@@ -114,6 +114,15 @@ Read more about this in `the EC2 docs`__.
 
 __ http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html
 
+Recent kernels include the ena driver that can be used instead 
+of installing the drivers using DKMS. To skip the driver installation 
+and still mark the AMI to use enhanced networking, use the kernel option
+for enhanced_networking.
+
+- ``enhanced_networking``: Support enhanced networking drivers
+  Valid values: ``none``, ``simple``, ``kernel``
+  ``optional``
+
 Example:
 
 .. code-block:: yaml
