@@ -4,7 +4,7 @@ from bootstrapvz.base.fs.exceptions import VolumeError
 
 class EBSVolume(Volume):
 
-    def create(self, conn, zone, encrypted, kms_key_id):
+    def create(self, conn, zone, encrypted=False, kms_key_id=None):
         self.fsm.create(connection=conn, zone=zone, encrypted=encrypted, kms_key_id=kms_key_id)
 
     def _before_create(self, e):

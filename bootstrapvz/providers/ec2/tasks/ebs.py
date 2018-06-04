@@ -10,8 +10,8 @@ class Create(Task):
     def run(cls, info):
         # EBS volumes support encryption. KMS key id is optional and default key
         # is used when it is not defined.
-        encrypted = info.manifest.data['provider']['encrypted'] if 'encrypted' in info.manifest.data['provider'] else False
-        kms_key_id = info.manifest.data['provider']['kms_key_id'] if 'kms_key_id' in info.manifest.data['provider'] else None
+        encrypted = info.manifest.data['provider'].get('encrypted', False)
+        kms_key_id = info.manifest.data['provider'].get('kms_key_id')
 
         info.volume.create(info._ec2['connection'], info._ec2['host']['availabilityZone'], encrypted, kms_key_id)
 
