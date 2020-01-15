@@ -14,7 +14,7 @@ class AddPackages(Task):
 
     @classmethod
     def run(cls, info):
-        info.packages.add('python-pip')
+        info.packages.add('python3-pip')
 
 
 class QueryPackages(Task):
@@ -48,7 +48,7 @@ class QueryPips(Task):
     @classmethod
     def run(cls, info):
         from bootstrapvz.common.tools import log_check_call
-        command = [ "chroot %s pip list" % (info.root) ]
+        command = [ "chroot %s pip3 list" % (info.root) ]
         pips = log_check_call(command, shell=True)
         info._ec2_metadata['pips'] = pips
 
@@ -86,7 +86,7 @@ class WriteAMIMetadata(Task):
 
             data['gems'][name] = versions
 
-        # Gem list returned by pip list has format "package (version, version)"
+        # Gem list returned by pip3 list has format "package    version"
         for line in info._ec2_metadata['pips']:
             m = re.findall(r'(.*?)\s+\((.*?)\)', line)
             name = m[0][0]
