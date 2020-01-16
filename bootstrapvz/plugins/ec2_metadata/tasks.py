@@ -14,6 +14,7 @@ class AddPackages(Task):
 
     @classmethod
     def run(cls, info):
+        info.packages.add('python-pip')
         info.packages.add('python3-pip')
 
 
@@ -48,9 +49,13 @@ class QueryPips(Task):
     @classmethod
     def run(cls, info):
         from bootstrapvz.common.tools import log_check_call
-        command = [ "chroot %s pip3 list" % (info.root) ]
+        command = [ "chroot %s pip list" % (info.root) ]
         pips = log_check_call(command, shell=True)
         info._ec2_metadata['pips'] = pips
+
+        command3 = [ "chroot %s pip3 list" % (info.root) ]
+        pips3 = log_check_call(command, shell=True)
+        info._ec2_metadata['pips3'] = pips3
 
 
 class WriteAMIMetadata(Task):
@@ -67,6 +72,7 @@ class WriteAMIMetadata(Task):
         data['packages'] = {}
         data['gems'] = {}
         data['pips'] = {}
+        data['pips3'] = {}
         data['tags'] = {}
 
         # Package list returned by dpkg-query -W has package name and version
@@ -86,7 +92,7 @@ class WriteAMIMetadata(Task):
 
             data['gems'][name] = versions
 
-        # Gem list returned by pip3 list has format "package    version"
+        # Gem list returned by pip(3) list has format "package    version"
         for line in info._ec2_metadata['pips']:
             m = re.findall(r'(.*?)\s+\((.*?)\)', line)
             name = m[0][0]
@@ -96,6 +102,16 @@ class WriteAMIMetadata(Task):
                 versions.append(version.strip())
 
             data['pips'][name] = versions
+
+        for line in info._ec2_metadata['pips3']:
+            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
+            name = m[0][0]
+            versions = []
+
+            for version in m[0][1].split(","):
+                versions.append(version.strip())
+
+            data['pips3'][name] = versions
 
         # Setting up tags on the AMI
         if 'tags' in info.manifest.data:
