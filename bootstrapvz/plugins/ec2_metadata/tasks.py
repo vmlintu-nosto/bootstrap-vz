@@ -49,11 +49,11 @@ class QueryPips(Task):
     @classmethod
     def run(cls, info):
         from bootstrapvz.common.tools import log_check_call
-        command = [ "chroot %s pip list" % (info.root) ]
+        command = [ "chroot %s pip list --format freeze" % (info.root) ]
         pips = log_check_call(command, shell=True)
         info._ec2_metadata['pips'] = pips
 
-        command3 = [ "chroot %s pip3 list" % (info.root) ]
+        command3 = [ "chroot %s pip3 list --format freeze" % (info.root) ]
         pips3 = log_check_call(command, shell=True)
         info._ec2_metadata['pips3'] = pips3
 
@@ -83,35 +83,41 @@ class WriteAMIMetadata(Task):
 
         # Gem list returned by gem list has format "package (version, version)"
         for line in info._ec2_metadata['gems']:
-            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
-            name = m[0][0]
-            versions = []
+            matches = re.findall(r'(.*?)\s+\((.*?)\)', line)
 
-            for version in m[0][1].split(","):
-                versions.append(version.strip())
+            for match in matches:
+                name = match[0]
+                versions = []
 
-            data['gems'][name] = versions
+                for version in match[1].split(","):
+                    versions.append(version.strip())
+
+                data['gems'][name] = versions
 
         # Gem list returned by pip(3) list has format "package    version"
         for line in info._ec2_metadata['pips']:
-            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
-            name = m[0][0]
-            versions = []
+            matches = re.findall(r'(.*?)==(.*)', line)
 
-            for version in m[0][1].split(","):
-                versions.append(version.strip())
+            for match in matches:
+                name = match[0]
+                versions = []
 
-            data['pips'][name] = versions
+                for version in match[1].split(","):
+                    versions.append(version.strip())
+
+                data['pips'][name] = versions
 
         for line in info._ec2_metadata['pips3']:
-            m = re.findall(r'(.*?)\s+\((.*?)\)', line)
-            name = m[0][0]
-            versions = []
+            matches = re.findall(r'(.*?)==(.*)', line)
 
-            for version in m[0][1].split(","):
-                versions.append(version.strip())
+            for match in matches:
+                name = match[0]
+                versions = []
 
-            data['pips3'][name] = versions
+                for version in match[1].split(","):
+                    versions.append(version.strip())
+
+                data['pips3'][name] = versions
 
         # Setting up tags on the AMI
         if 'tags' in info.manifest.data:
